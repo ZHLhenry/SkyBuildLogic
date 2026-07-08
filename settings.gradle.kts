@@ -1,7 +1,5 @@
 pluginManagement {
     repositories {
-        // 本地 Maven 仓库（build-logic 发布后从此处解析插件）
-        mavenLocal()
         google {
             content {
                 includeGroupByRegex("com\\.android.*")
@@ -11,17 +9,18 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
-        // build-logic convention 插件发布仓库（Plugin Marker + 主 JAR）
+        maven {
+            url = uri("https://maven.aliyun.com/repository/central")
+        }
+        maven {
+            url = uri("https://maven.aliyun.com/repository/gradle-plugin")
+        }
         maven {
             credentials {
                 username = "677b4e5b259532263f6b30a6"
                 password = "RnVrdxoghjKo"
             }
             url = uri("https://packages.aliyun.com/6732fc8f356ccaf8531a1487/maven/skybuildlogic")
-            content {
-                includeGroupByRegex("sky\\..*")
-                includeGroup("com.sky.buildLogic")
-            }
         }
         maven {
             url = uri("${rootDir}/build/repo")
@@ -36,10 +35,29 @@ dependencyResolutionManagement {
         maven {
             url = uri("https://jitpack.io")
         }
+        maven {
+            url = uri("https://maven.aliyun.com/repository/google")
+        }
+        maven {
+            url = uri("https://maven.aliyun.com/repository/central")
+        }
+        maven {
+            url = uri("https://maven.aliyun.com/repository/public")
+        }
+        fun aliyunMaven(repoUrl: String) {
+            maven {
+                credentials {
+                    username = "677b4e5b259532263f6b30a6"
+                    password = "RnVrdxoghjKo"
+                }
+                url = uri(repoUrl)
+            }
+        }
+        aliyunMaven("https://packages.aliyun.com/6732fc8f356ccaf8531a1487/maven/skybuildlogic")
     }
 }
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "SkyBuildLogic"
 include(":app")
-includeBuild("buildLogicLib")
+//includeBuild("buildLogicLib")

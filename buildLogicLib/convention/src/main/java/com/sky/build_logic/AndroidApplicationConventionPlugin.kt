@@ -18,6 +18,9 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
             with(pluginManager) {
                 apply("com.android.application")
+                if (skyExt.enableCompose.get()) {
+                    apply("org.jetbrains.kotlin.plugin.compose")
+                }
             }
 
             extensions.configure<ApplicationExtension> {

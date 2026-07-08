@@ -14,10 +14,13 @@ class AndroidCommonLibraryConventionPlugin : Plugin<Project> {
         with(target) {
             // 注册共享扩展到 rootProject，供 app 等依赖模块继承
             registerSharedSkyBuildExtension()
-            ensureSkyBuildExtension().validateForLibrary(path)
+            val skyExt = ensureSkyBuildExtension().apply { validateForLibrary(path) }
 
             with(pluginManager) {
                 apply("com.android.library")
+                if (skyExt.enableCompose.get()) {
+                    apply("org.jetbrains.kotlin.plugin.compose")
+                }
             }
 
             extensions.configure<LibraryExtension> {

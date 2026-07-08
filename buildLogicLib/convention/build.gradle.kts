@@ -6,6 +6,7 @@ import java.util.Properties
 
 plugins {
     `kotlin-dsl`
+    `java-library`
     `maven-publish`
 }
 
@@ -29,9 +30,11 @@ tasks.withType<KotlinCompile>().configureEach {
 }
 
 dependencies {
-    compileOnly(libs.android.gradlePlugin)
-    compileOnly(libs.kotlin.gradlePlugin)
-    compileOnly(libs.ksp.gradlePlugin)
+    api(libs.android.gradlePlugin)
+    api(libs.kotlin.gradlePlugin)
+    api(libs.ksp.gradlePlugin)
+    api(libs.compose.compiler.gradlePlugin)
+    api(libs.hilt.gradlePlugin)
 }
 
 gradlePlugin {
@@ -69,7 +72,7 @@ gradlePlugin {
 
 // 发布 convention 插件时，自动同时发布 hilt-noop-processor
 tasks.named("publish").configure {
-    dependsOn(project(":hilt-noop-processor").tasks.named("publish"))
+    dependsOn(":hilt-noop-processor:publish")
 }
 
 // ==================== Maven Publishing ====================
