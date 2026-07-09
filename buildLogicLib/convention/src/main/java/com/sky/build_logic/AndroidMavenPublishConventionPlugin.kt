@@ -21,11 +21,6 @@ class AndroidMavenPublishConventionPlugin : Plugin<Project> {
                 }
             }
 
-            // 循环打印输出 localProperties 的信息
-            localProperties.forEach { (key, value) ->
-                println("Property: $key = $value")
-            }
-
             val mavenCentralUserName = localProperties.getProperty("mavenCentral.username")
                 ?: error("请在 local.properties 中配置 mavenCentral.username（Maven 仓库用户名）")
             val mavenCentralPassword = localProperties.getProperty("mavenCentral.password")
@@ -79,7 +74,7 @@ class AndroidMavenPublishConventionPlugin : Plugin<Project> {
 
                     repositories {
                         maven {
-                            isAllowInsecureProtocol = true
+                            isAllowInsecureProtocol = mavenCentralRepoUrl.startsWith("http://")
                             url = uri(mavenCentralRepoUrl)
                             credentials {
                                 username = mavenCentralUserName

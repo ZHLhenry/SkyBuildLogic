@@ -66,20 +66,18 @@ private fun linkToRoot(localExt: SkyBuildExtension, rootExt: SkyBuildExtension) 
 }
 
 /**
- * 从 rootProject.extra 创建 rootExt。
+ * 从 rootProject.extra 读取共享配置值并填充到 SkyBuildExtension。
  * rootProject.extra 在 root build.gradle.kts 中设置，早于所有子项目评估。
  */
-private fun Project.createRootExtFromExtra(): SkyBuildExtension? {
+private fun Project.populateFromExtra(rootExt: SkyBuildExtension) {
     val rootExtra = rootProject.extensions.extraProperties
-    val rootExt = rootProject.extensions.create("skyBuild", SkyBuildExtension::class.java)
-    
     fun <T> extraProp(key: String, setter: (T) -> Unit) {
         if (rootExtra.has(key)) {
             @Suppress("UNCHECKED_CAST")
             setter(rootExtra.get(key) as T)
         }
     }
-    
+
     extraProp<Int>("skyBuild.compileSdk") { rootExt.compileSdk.set(it) }
     extraProp<Int>("skyBuild.minSdk") { rootExt.minSdk.set(it) }
     extraProp<Int>("skyBuild.targetSdk") { rootExt.targetSdk.set(it) }
@@ -91,7 +89,15 @@ private fun Project.createRootExtFromExtra(): SkyBuildExtension? {
     extraProp<Boolean>("skyBuild.enableDataBinding") { rootExt.enableDataBinding.set(it) }
     extraProp<Boolean>("skyBuild.enableBuildConfig") { rootExt.enableBuildConfig.set(it) }
     extraProp<Boolean>("skyBuild.enableCompose") { rootExt.enableCompose.set(it) }
-    
+}
+
+/**
+ * 从 rootProject.extra 创建 rootExt。
+ * rootProject.extra 在 root build.gradle.kts 中设置，早于所有子项目评估。
+ */
+private fun Project.createRootExtFromExtra(): SkyBuildExtension? {
+    val rootExt = rootProject.extensions.create("skyBuild", SkyBuildExtension::class.java)
+    populateFromExtra(rootExt)
     return rootExt
 }
 
@@ -212,27 +218,6 @@ internal fun Project.registerSharedSkyBuildExtension(): SkyBuildExtension {
     }
 
     val rootExt = rootProject.extensions.create("skyBuild", SkyBuildExtension::class.java)
-    
-    // 从 rootProject.extra 读取共享配置值
-    val rootExtra = rootProject.extensions.extraProperties
-    fun <T> extraProp(key: String, setter: (T) -> Unit) {
-        if (rootExtra.has(key)) {
-            @Suppress("UNCHECKED_CAST")
-            setter(rootExtra.get(key) as T)
-        }
-    }
-    
-    extraProp<Int>("skyBuild.compileSdk") { rootExt.compileSdk.set(it) }
-    extraProp<Int>("skyBuild.minSdk") { rootExt.minSdk.set(it) }
-    extraProp<Int>("skyBuild.targetSdk") { rootExt.targetSdk.set(it) }
-    extraProp<String>("skyBuild.applicationId") { rootExt.applicationId.set(it) }
-    extraProp<String>("skyBuild.appName") { rootExt.appName.set(it) }
-    extraProp<Int>("skyBuild.versionCode") { rootExt.versionCode.set(it) }
-    extraProp<String>("skyBuild.versionName") { rootExt.versionName.set(it) }
-    extraProp<Boolean>("skyBuild.enableViewBinding") { rootExt.enableViewBinding.set(it) }
-    extraProp<Boolean>("skyBuild.enableDataBinding") { rootExt.enableDataBinding.set(it) }
-    extraProp<Boolean>("skyBuild.enableBuildConfig") { rootExt.enableBuildConfig.set(it) }
-    extraProp<Boolean>("skyBuild.enableCompose") { rootExt.enableCompose.set(it) }
-    
+    populateFromExtra(rootExt)
     return rootExt
 }

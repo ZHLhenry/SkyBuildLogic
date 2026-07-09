@@ -15,20 +15,35 @@ internal fun Project.applySigningConfigs(
         }
     }
 
-    val jksStoreFile = localProperties.getProperty("app.storeFile")
-        ?: error("请在 local.properties 中配置 app.storeFile（签名文件路径）")
-    val jksStorePassword = localProperties.getProperty("app.storePassword")
-        ?: error("请在 local.properties 中配置 app.storePassword（签名密码）")
-    val jksKeyAlias = localProperties.getProperty("app.keyAlias")
-        ?: error("请在 local.properties 中配置 app.keyAlias（密钥别名）")
+    // Debug 签名配置（必填）
+    val debugStoreFile = localProperties.getProperty("app.debug.storeFile")?.takeIf { it.isNotBlank() }
+        ?: error("请在 local.properties 中配置 app.debug.storeFile（debug 签名文件路径）")
+    val debugStorePassword = localProperties.getProperty("app.debug.storePassword")?.takeIf { it.isNotBlank() }
+        ?: error("请在 local.properties 中配置 app.debug.storePassword（debug 签名密码）")
+    val debugKeyAlias = localProperties.getProperty("app.debug.keyAlias")?.takeIf { it.isNotBlank() }
+        ?: error("请在 local.properties 中配置 app.debug.keyAlias（debug 密钥别名）")
+
+    // Release 签名配置（必填）
+    val releaseStoreFile = localProperties.getProperty("app.release.storeFile")?.takeIf { it.isNotBlank() }
+        ?: error("请在 local.properties 中配置 app.release.storeFile（release 签名文件路径）")
+    val releaseStorePassword = localProperties.getProperty("app.release.storePassword")?.takeIf { it.isNotBlank() }
+        ?: error("请在 local.properties 中配置 app.release.storePassword（release 签名密码）")
+    val releaseKeyAlias = localProperties.getProperty("app.release.keyAlias")?.takeIf { it.isNotBlank() }
+        ?: error("请在 local.properties 中配置 app.release.keyAlias（release 密钥别名）")
 
     applicationExtension.apply {
         signingConfigs {
             getByName("debug") {
-                storeFile = file(jksStoreFile)
-                storePassword = jksStorePassword
-                keyAlias = jksKeyAlias
-                keyPassword = jksStorePassword
+                storeFile = file(debugStoreFile)
+                storePassword = debugStorePassword
+                keyAlias = debugKeyAlias
+                keyPassword = debugStorePassword
+            }
+            create("release") {
+                storeFile = file(releaseStoreFile)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseStorePassword
             }
         }
 
@@ -51,7 +66,7 @@ internal fun Project.applySigningConfigs(
             getByName("release") {
                 applicationIdSuffix = AppBuildType.RELEASE.applicationIdSuffix
                 isMinifyEnabled = false
-                signingConfig = signingConfigs.getByName("debug")
+                signingConfig = signingConfigs.getByName("release")
                 proguardFiles(
                     getDefaultProguardFile("proguard-android-optimize.txt"),
                     "proguard-rules.pro"

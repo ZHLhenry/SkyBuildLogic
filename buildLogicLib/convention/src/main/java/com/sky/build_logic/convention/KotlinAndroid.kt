@@ -31,10 +31,10 @@ internal fun Project.configureAndroidLibrary(commonExtension: LibraryExtension) 
             warningsAsErrors = true
             // 生成 HTML 格式的 Lint 报告
             htmlReport = true
-            htmlOutput = file("${buildDir}/reports/lint/lint-report.html")
+            htmlOutput = layout.buildDirectory.file("reports/lint/lint-report.html").get().asFile
             // 生成 XML 格式的 Lint 报告
             xmlReport = true
-            xmlOutput = file("${buildDir}/reports/lint/lint-report.xml")
+            xmlOutput = layout.buildDirectory.file("reports/lint/lint-report.xml").get().asFile
         }
         compileOptions {
             sourceCompatibility = JavaVersion.VERSION_17

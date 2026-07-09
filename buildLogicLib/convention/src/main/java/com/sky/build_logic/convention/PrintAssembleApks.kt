@@ -10,6 +10,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.time.ZoneId
@@ -71,7 +72,7 @@ internal abstract class RenameAndOpenApkTask : DefaultTask() {
     @get:Input
     abstract val openInFinder: Property<Boolean>
 
-    @get:Internal
+    @get:OutputDirectory
     abstract val buildOutputDir: DirectoryProperty
 
     @TaskAction
