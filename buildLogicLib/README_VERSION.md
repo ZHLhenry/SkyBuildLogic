@@ -1,3 +1,12 @@
+## [v1.2.1] - 2026-07-26
+- 新增 `useLocalBuildLogic` 属性支持，可在 `local.properties` 中切换本地 includeBuild 与远程 Maven 依赖
+- 修复 `settings.gradle.kts` 中 `providers.gradleProperty()` 无法读取 `local.properties` 的问题，改为显式加载
+- 依赖版本升级：
+  - AGP: 9.2.1 → 9.3.1
+  - Kotlin: 2.2.10 → 2.4.0
+  - Hilt: 2.60 → 2.60.1
+  - coreKtx: 1.16.0 → 1.18.0
+
 ## [v1.2.0] - 2026-07-09
 - 签名配置升级：支持 debug/release 分离签名配置（app.debug.* / app.release.*），release 构建使用独立 release 签名
 - 修复 Release 构建使用 debug 签名的 Bug

@@ -60,4 +60,17 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "SkyBuildLogic"
 include(":app")
-//includeBuild("buildLogicLib")
+
+// 通过 local.properties 中的 useLocalBuildLogic 属性控制：
+//   true  → 使用本地 includeBuild("buildLogicLib")（开发调试 convention 插件）
+//   false → 使用远程 Maven 仓库中的 buildLogic 依赖（日常开发）
+val localProperties = java.util.Properties().apply {
+    val localPropertiesFile = rootDir.resolve("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(localPropertiesFile.inputStream())
+    }
+}
+val useLocalBuildLogic = localProperties.getProperty("useLocalBuildLogic")?.toBooleanStrictOrNull() ?: false
+if (useLocalBuildLogic) {
+    includeBuild("buildLogicLib")
+}

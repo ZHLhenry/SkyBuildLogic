@@ -13,6 +13,7 @@
   - [配置插件仓库](#51-配置插件仓库)
   - [声明插件版本](#52-声明插件版本)
   - [配置 local.properties](#53-配置-localproperties)
+  - [本地开发与远程依赖切换](#54-本地开发与远程依赖切换)
 - [如何使用各插件](#六如何使用各插件)
   - [根项目共享配置](#61-根项目共享配置)
   - [应用模块 (app)](#62-应用模块-app)
@@ -58,8 +59,8 @@
 
 | 项目 | 版本 |
 |------|------|
-| **buildLogicLib** | **1.2.0** |
-| 发布时间 | 2026-07-09 |
+| **buildLogicLib** | **1.2.1** |
+| 发布时间 | 2026-07-26 |
 | 发布仓库 | 阿里云效 Maven 私有仓库 |
 
 ### 2.2 最低兼容性要求
@@ -68,8 +69,8 @@
 
 | 依赖项 | 最低版本 | 说明 |
 |--------|---------|------|
-| **AGP (Android Gradle Plugin)** | **9.0+** | 本库基于 AGP 9.2.1 编译，使用了 AGP 9.x 的 Variant API |
-| **Kotlin** | **2.0+** | 本库使用 Kotlin 2.2.10 编译，KGP 需兼容 AGP 9.x |
+| **AGP (Android Gradle Plugin)** | **9.0+** | 本库基于 AGP 9.3.1 编译，使用了 AGP 9.x 的 Variant API |
+| **Kotlin** | **2.0+** | 本库使用 Kotlin 2.4.0 编译，KGP 需兼容 AGP 9.x |
 | **KSP** | **2.0+** | 需与 Kotlin 版本匹配，如 Kotlin 2.2.10 对应 KSP 2.3.9 |
 | **Java / JDK** | **17** | 本库编译目标为 JVM 17，消费项目必须使用 JDK 17 |
 | **Gradle** | **8.7+** | 需与 AGP 9.x 兼容的 Gradle 版本 |
@@ -84,11 +85,11 @@
 
 | 依赖 | 版本 | 说明 |
 |------|------|------|
-| AGP | 9.2.1 | Android Gradle Plugin |
-| Kotlin | 2.2.10 | Kotlin Gradle Plugin |
+| AGP | 9.3.1 | Android Gradle Plugin |
+| Kotlin | 2.4.0 | Kotlin Gradle Plugin |
 | KSP | 2.3.9 | Kotlin Symbol Processing |
-| Hilt | 2.60 | 依赖注入框架（内置默认版本，可覆盖） |
-| Compose Compiler | 随 Kotlin 2.2.10 | Compose Compiler Gradle Plugin |
+| Hilt | 2.60.1 | 依赖注入框架（内置默认版本，可覆盖） |
+| Compose Compiler | 随 Kotlin 2.4.0 | Compose Compiler Gradle Plugin |
 | Compose BOM | 2026.02.01 | Compose 物料清单 |
 
 ---
@@ -208,7 +209,7 @@ dependencyResolutionManagement {
 
 ```toml
 [versions]
-buildLogic = "1.2.0"
+buildLogic = "1.2.1"
 
 [libraries]
 hilt-noop-processor = { group = "com.sky.buildLogic", name = "hilt-noop-processor", version.ref = "buildLogic" }
@@ -247,6 +248,31 @@ mavenCentral.artifactId=your-library
 mavenCentral.version=1.0.0
 mavenCentral.repoUrl=https://your-maven-repo.com/releases
 ```
+
+### 5.4 本地开发与远程依赖切换
+
+在 `local.properties` 中通过 `useLocalBuildLogic` 属性控制引用方式：
+
+```properties
+# 是否使用本地 buildLogicLib（true=本地includeBuild，false=远程Maven）
+useLocalBuildLogic=false
+```
+
+| 值 | 行为 | 适用场景 |
+|---|---|---|
+| `false`（默认） | 从远程 Maven 仓库拉取 buildLogic 依赖 | 日常开发，使用已发布的稳定版本 |
+| `true` | 使用本地 `includeBuild("buildLogicLib")` | 开发调试 convention 插件，修改后无需发布即可生效 |
+
+**工作原理：**
+- `settings.gradle.kts` 读取 `local.properties` 中的 `useLocalBuildLogic` 属性
+- 当值为 `true` 时，调用 `includeBuild("buildLogicLib")` 启用 Gradle Composite Build
+- Composite Build 会自动将版本目录中声明的插件 ID（如 `sky.android.application`）替换为本地构建产物
+- 版本目录中的 `version.ref = "buildLogic"` 在本地模式下被忽略，以本地源码为准
+
+**典型工作流：**
+1. 日常开发：`useLocalBuildLogic=false`，使用远程 Maven 依赖
+2. 需要修改 convention 插件时：改为 `useLocalBuildLogic=true`，直接引用本地源码
+3. 修改完成后：发布新版本到 Maven，再改回 `useLocalBuildLogic=false`
 
 ---
 
@@ -609,7 +635,7 @@ mavenCentral.repoUrl=https://your-maven-repo.com/releases
 在 `local.properties` 中配置：
 
 ```properties
-buildLogic.version=1.2.0
+buildLogic.version=1.2.1
 buildLogic.repoUrl=https://packages.aliyun.com/6732fc8f356ccaf8531a1487/maven/skybuildlogic
 buildLogic.username=your_username
 buildLogic.password=your_password
@@ -619,7 +645,7 @@ buildLogic.password=your_password
 
 ```toml
 [versions]
-buildLogic = "1.2.0"
+buildLogic = "1.2.1"
 ```
 
 ### 9.2 发布命令
@@ -645,11 +671,11 @@ cd buildLogicLib
 convention 模块通过 `api` 声明以下依赖，消费项目无需重复引入：
 
 ```
-api(com.android.tools.build:gradle)                      // AGP 9.2.1
-api(org.jetbrains.kotlin:kotlin-gradle-plugin)            // Kotlin Gradle Plugin 2.2.10
+api(com.android.tools.build:gradle)                      // AGP 9.3.1
+api(org.jetbrains.kotlin:kotlin-gradle-plugin)            // Kotlin Gradle Plugin 2.4.0
 api(com.google.devtools.ksp:gradle-plugin)                // KSP Gradle Plugin 2.3.9
-api(org.jetbrains.kotlin:compose-compiler-gradle-plugin)  // Compose Compiler Plugin 2.2.10
-api(com.google.dagger:hilt-android-gradle-plugin)         // Hilt Gradle Plugin 2.60
+api(org.jetbrains.kotlin:compose-compiler-gradle-plugin)  // Compose Compiler Plugin 2.4.0
+api(com.google.dagger:hilt-android-gradle-plugin)         // Hilt Gradle Plugin 2.60.1
 ```
 
 ---

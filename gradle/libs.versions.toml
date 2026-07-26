@@ -1,16 +1,16 @@
 [versions]
-agp = "9.2.1"
-coreKtx = "1.16.0"
+agp = "9.3.1"
+coreKtx = "1.18.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.9.3"
-kotlin = "2.2.10"
+kotlin = "2.4.0"
 composeBom = "2026.02.01"
 ksp = "2.3.9"
-hilt = "2.60"
-buildLogic = "1.2.0"
+hilt = "2.60.1"
+buildLogic = "1.2.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
