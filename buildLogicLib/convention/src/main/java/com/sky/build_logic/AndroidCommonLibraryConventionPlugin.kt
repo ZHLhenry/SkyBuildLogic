@@ -1,4 +1,6 @@
 import com.android.build.api.dsl.LibraryExtension
+import com.sky.build_logic.convention.ComposeDependencySet
+import com.sky.build_logic.convention.configureComposeDependencies
 import com.sky.build_logic.convention.configureKotlinAndroid
 import com.sky.build_logic.convention.ensureSkyBuildExtension
 import com.sky.build_logic.convention.registerSharedSkyBuildExtension
@@ -24,7 +26,19 @@ class AndroidCommonLibraryConventionPlugin : Plugin<Project> {
             }
 
             extensions.configure<LibraryExtension> {
+                // enableCompose=true 时自动开启 compose，消费者无需手动声明 buildFeatures { compose = true }
+                buildFeatures {
+                    compose = skyExt.enableCompose.get()
+                }
                 configureKotlinAndroid(this)
+            }
+
+            if (skyExt.enableCompose.get()) {
+                configureComposeDependencies(
+                    dependencySet = ComposeDependencySet.RUNTIME_ONLY,
+                    coreScope = "implementation",
+                    bomScope = "implementation"
+                )
             }
 
             dependencies {

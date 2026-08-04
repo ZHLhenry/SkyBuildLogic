@@ -11,7 +11,7 @@ import org.gradle.api.Project
  * extra["skyBuild.applicationId"] = "com.sky.mvvm.sample"
  * extra["skyBuild.versionCode"] = 101
  * extra["skyBuild.versionName"] = "1.0.0"
- * extra["skyBuild.compileSdk"] = 36
+ * extra["skyBuild.compileSdk"] = 37
  * extra["skyBuild.minSdk"] = 28
  * extra["skyBuild.targetSdk"] = 35
  * extra["skyBuild.enableViewBinding"] = true

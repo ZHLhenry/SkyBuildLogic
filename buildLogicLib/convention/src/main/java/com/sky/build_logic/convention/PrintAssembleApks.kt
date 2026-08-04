@@ -103,7 +103,7 @@ internal abstract class RenameAndOpenApkTask : DefaultTask() {
                     "${appName.get()}_${flavorPart}${buildTypeName.get()}_v${fallbackVersionName}_${fallbackVersionCode}_${getApkBuildTime()}.apk"
                 }
             val renamedFile = File(outputDir, newFileName)
-            // 复制一份到 build/outputs/apk/ 目录下
+            // 复制并改名到 build/outputs/renamed-apk/ 目录下
             originalFile.copyTo(renamedFile, overwrite = true)
             println("> Copied APK: ${renamedFile.absolutePath}")
         }

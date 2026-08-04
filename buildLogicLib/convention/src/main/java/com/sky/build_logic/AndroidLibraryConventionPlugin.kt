@@ -1,5 +1,7 @@
 import com.android.build.api.dsl.LibraryExtension
+import com.sky.build_logic.convention.ComposeDependencySet
 import com.sky.build_logic.convention.configureAndroidLibrary
+import com.sky.build_logic.convention.configureComposeDependencies
 import com.sky.build_logic.convention.ensureSkyBuildExtension
 import com.sky.build_logic.convention.registerSharedSkyBuildExtension
 import com.sky.build_logic.convention.validateForLibrary
@@ -25,6 +27,13 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             }
             extensions.configure<LibraryExtension> {
                 configureAndroidLibrary(commonExtension = this)
+            }
+            if (skyExt.enableCompose.get()) {
+                configureComposeDependencies(
+                    dependencySet = ComposeDependencySet.CORE_UI,
+                    coreScope = "api",
+                    bomScope = "api"
+                )
             }
             dependencies {
                 add("testImplementation", kotlin("test"))

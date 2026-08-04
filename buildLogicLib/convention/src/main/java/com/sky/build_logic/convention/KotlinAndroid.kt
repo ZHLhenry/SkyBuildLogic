@@ -22,6 +22,10 @@ internal fun Project.configureAndroidLibrary(commonExtension: LibraryExtension) 
         defaultConfig {
             minSdk = skyExt.minSdk.get()
         }
+        // enableCompose=true 时自动开启 compose，消费者无需手动声明 buildFeatures { compose = true }
+        buildFeatures {
+            compose = skyExt.enableCompose.get()
+        }
         lint {
             checkDependencies = true
             // 忽略指定的 Lint 规则
@@ -108,6 +112,7 @@ internal fun Project.configureKotlinJvm() {
  */
 @Suppress("DEPRECATION")
 private fun Project.configureKotlin() {
+    val skyExt = ensureSkyBuildExtension()
     // Use withType to workaround https://youtrack.jetbrains.com/issue/KT-55947
     tasks.withType<KotlinCompile>().configureEach {
         compilerOptions {
@@ -122,6 +127,11 @@ private fun Project.configureKotlin() {
                 "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
                 "-opt-in=kotlinx.coroutines.FlowPreview",
             )
+            // enableCompose=true 时自动 opt-in Material3 Experimental API，
+            // 消费者无需再在各模块手动声明 freeCompilerArgs.add(ExperimentalMaterial3Api)
+            if (skyExt.enableCompose.get()) {
+                freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
+            }
         }
     }
 }

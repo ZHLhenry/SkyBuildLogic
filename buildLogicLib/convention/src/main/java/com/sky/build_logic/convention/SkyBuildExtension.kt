@@ -4,6 +4,9 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import javax.inject.Inject
 
+/** Compose BOM 内置默认版本 */
+internal const val DEFAULT_COMPOSE_BOM_VERSION = "2026.06.01"
+
 /**
  * SkyBuild 配置扩展，使用者在根项目 build.gradle.kts 中通过 extra 属性进行配置。
  * 插件会自动从 rootProject.extra 中读取 "skyBuild.*" 前缀的属性值，
@@ -15,19 +18,22 @@ import javax.inject.Inject
  * extra["skyBuild.applicationId"] = "com.sky.mvvm.sample"
  * extra["skyBuild.versionCode"] = 101
  * extra["skyBuild.versionName"] = "1.0.0"
- * extra["skyBuild.compileSdk"] = 36
+ * extra["skyBuild.compileSdk"] = 37
  * extra["skyBuild.minSdk"] = 28
  * extra["skyBuild.targetSdk"] = 35
  * extra["skyBuild.enableViewBinding"] = true
  * extra["skyBuild.enableDataBinding"] = true
  * extra["skyBuild.enableBuildConfig"] = true
  * extra["skyBuild.enableCompose"] = false
+ * extra["skyBuild.composeBomVersion"] = "2026.02.01"
  * ```
  *
  * 各子模块通过应用 sky convention 插件自动继承上述共享配置，
  * 无需在子模块中重复声明。
  *
- * 注意：所有属性均无默认值，消费者必须显式配置，否则构建时将抛出异常提示配置。
+ * 注意：除 composeBomVersion 外，所有属性均无默认值，消费者必须显式配置，
+ * 否则构建时将抛出异常提示配置。composeBomVersion 在 enableCompose=true 时生效，
+ * 未配置则使用插件内置默认值 [DEFAULT_COMPOSE_BOM_VERSION]。
  *
  * 注意：Product Flavor 配置请使用标准 AGP DSL 在 android {} 块中配置，
  * 因为 AGP 9.x 不允许在 afterEvaluate 中修改 flavorDimensions。
@@ -66,4 +72,11 @@ abstract class SkyBuildExtension @Inject constructor(objects: ObjectFactory) {
 
     /** 是否启用 Compose 支持（必填） */
     val enableCompose: Property<Boolean> = objects.property(Boolean::class.java)
+
+    /**
+     * Compose BOM 版本号（可选）。
+     * 仅当 [enableCompose] 为 true 时生效；未配置时使用插件内置默认值。
+     */
+    val composeBomVersion: Property<String> = objects.property(String::class.java)
+        .convention(DEFAULT_COMPOSE_BOM_VERSION)
 }

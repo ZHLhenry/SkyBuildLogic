@@ -75,7 +75,7 @@
 | **Java / JDK** | **17** | 本库编译目标为 JVM 17，消费项目必须使用 JDK 17 |
 | **Gradle** | **8.7+** | 需与 AGP 9.x 兼容的 Gradle 版本 |
 | **Android minSdk** | **21+** | 消费项目的 minSdk 需 ≥ 21（由消费者自行配置） |
-| **Android compileSdk** | **34+** | 建议使用 35 或 36（由消费者自行配置） |
+| **Android compileSdk** | **34+** | 建议使用 37 或更高（由消费者自行配置）。注意：本约定库本身不会注入 lifecycle-runtime-compose，但若消费方工程自行声明或经传递依赖引入了要求 minCompileSdk ≥ 37 的库（例如 androidx.lifecycle:lifecycle-runtime-compose:2.11.0，常由 activity-compose / navigation-compose 等传递引入），则 compileSdk 必须 ≥ 37，否则 AGP 的 AAR 元数据检查会报错。该限制与 enableCompose 开关无关。 |
 
 > **重要提示：** 本库不提供 `minSdk` / `compileSdk` 的默认值，这些参数由消费项目通过 `SkyBuildExtension` 显式配置。上述表格中的值为推荐最低要求。
 
@@ -90,7 +90,7 @@
 | KSP | 2.3.9 | Kotlin Symbol Processing |
 | Hilt | 2.60.1 | 依赖注入框架（内置默认版本，可覆盖） |
 | Compose Compiler | 随 Kotlin 2.4.0 | Compose Compiler Gradle Plugin |
-| Compose BOM | 2026.02.01 | Compose 物料清单 |
+| Compose BOM | 2026.06.01 | Compose 物料清单。`enableCompose=true` 时由 `skyBuild.composeBomVersion`（默认 2026.06.01）控制，也可在根项目 `extra["skyBuild.composeBomVersion"]` 覆盖 |
 
 ---
 
@@ -135,7 +135,7 @@ buildLogicLib/
 |---------|--------|------|------------------|
 | `sky.android.application` | `AndroidApplicationConventionPlugin` | Android 应用模块完整构建配置 | `com.android.application`、可选 `org.jetbrains.kotlin.plugin.compose` |
 | `sky.android.library` | `AndroidLibraryConventionPlugin` | Android 库模块构建（含 Parcelize + Lint） | `com.android.library`、`org.jetbrains.kotlin.plugin.parcelize`、可选 `org.jetbrains.kotlin.plugin.compose` |
-| `sky.android.library.common` | `AndroidCommonLibraryConventionPlugin` | Android 通用库构建（轻量，无 Parcelize） | `com.android.library`、可选 `org.jetbrains.kotlin.plugin.compose` |
+| `sky.android.library.common` | `AndroidCommonLibraryConventionPlugin` | Android 通用库构建（轻量，无 Parcelize / 无 Hilt Android Resource） | `com.android.library`、`com.google.devtools.ksp`、可选 `org.jetbrains.kotlin.plugin.compose` |
 | `sky.android.hilt` | `AndroidHiltConventionPlugin` | Hilt 依赖注入 + KSP 配置 | `dagger.hilt.android.plugin`、`com.google.devtools.ksp` |
 | `sky.android.publish` | `AndroidMavenPublishConventionPlugin` | Android Library 发布到 Maven 仓库 | `maven-publish` |
 | `sky.android.application.flavors` | `AndroidApplicationFlavorsConventionPlugin` | 注册共享 skyBuild 扩展（Flavor 场景） | 无 |
@@ -289,7 +289,7 @@ extra["skyBuild.appName"] = "SkyMVVM"
 extra["skyBuild.applicationId"] = "com.sky.mvvm.sample"
 extra["skyBuild.versionCode"] = 100
 extra["skyBuild.versionName"] = "1.0.0"
-extra["skyBuild.compileSdk"] = 36
+extra["skyBuild.compileSdk"] = 37
 extra["skyBuild.minSdk"] = 24
 extra["skyBuild.targetSdk"] = 35
 extra["skyBuild.enableViewBinding"] = true
@@ -436,7 +436,7 @@ plugins {
 - 添加 `hilt-compiler` 到 `ksp`、`kspAndroidTest`、`kspTest`
 - 添加 `hilt-noop-processor` 到 `annotationProcessor`（消除 KSP 场景下 javac 警告）
 
-**依赖查找 fallback 机制：** 优先从消费项目的 `libs.versions.toml` 查找（如 `hilt-android`、`hilt-compiler`、`hilt-noop-processor`），找不到则使用内置默认坐标（Hilt 版本 `2.60`，noop-processor 版本从 JAR manifest 读取）。
+**依赖查找 fallback 机制：** 优先从消费项目的 `libs.versions.toml` 查找（如 `hilt-android`、`hilt-compiler`、`hilt-noop-processor`），找不到则使用内置默认坐标（Hilt 版本 `2.60.1`，noop-processor 版本从 JAR manifest 读取）。
 
 ### 6.7 发布 Library 到 Maven
 
@@ -478,8 +478,10 @@ android {
 | `enableDataBinding` | `Property<Boolean>` | 启用 DataBinding | ✅ | ❌ |
 | `enableBuildConfig` | `Property<Boolean>` | 启用 BuildConfig 生成 | ✅ | ❌ |
 | `enableCompose` | `Property<Boolean>` | 启用 Compose 支持（控制是否应用 Compose Compiler 插件） | ✅ | ❌ |
+| `composeBomVersion` | `Property<String>` | Compose BOM 版本（`enableCompose=true` 时生效） | ✅ | ❌ |
 
-**所有属性均无默认值**，消费者必须显式配置，否则构建时抛出异常并给出配置示例提示。
+**除 `composeBomVersion` 外，所有属性均无默认值**，消费者必须显式配置，否则构建时抛出异常并给出配置示例提示。
+`composeBomVersion` 未配置时使用插件内置默认值（当前 `2026.06.01`），可在根项目 `extra["skyBuild.composeBomVersion"]` 覆盖。
 
 ### 7.2 配置共享机制
 
@@ -567,7 +569,7 @@ app.release.keyAlias=release_alias
 `sky.android.hilt` 插件自动完成以下操作：
 
 1. 应用 `dagger.hilt.android.plugin` 和 `com.google.devtools.ksp`
-2. 从消费项目的 version catalog 查找 Hilt 依赖，**找不到则使用内置默认版本（2.60）**：
+2. 从消费项目的 version catalog 查找 Hilt 依赖，**找不到则使用内置默认版本（2.60.1）**：
    - `implementation` ← `hilt-android`
    - `ksp` / `kspAndroidTest` / `kspTest` ← `hilt-compiler`
 3. 引入 `hilt-noop-processor` 到 `annotationProcessor`，消除 KSP 场景下 javac 的"未识别选项"警告
@@ -611,7 +613,7 @@ mavenCentral.repoUrl=https://your-maven-repo.com/releases
 
 ```
  [SkyBuild] :app final config:
-    compileSdk       = 36
+    compileSdk       = 37
     minSdk           = 28
     targetSdk        = 35
     applicationId    = com.sky.mvvm.sample

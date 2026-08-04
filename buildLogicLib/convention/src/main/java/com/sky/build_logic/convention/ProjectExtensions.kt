@@ -62,6 +62,7 @@ private fun linkToRoot(localExt: SkyBuildExtension, rootExt: SkyBuildExtension) 
     localExt.enableDataBinding.set(rootExt.enableDataBinding)
     localExt.enableBuildConfig.set(rootExt.enableBuildConfig)
     localExt.enableCompose.set(rootExt.enableCompose)
+    localExt.composeBomVersion.set(rootExt.composeBomVersion)
     localExt.applicationId.set(rootExt.applicationId)
 }
 
@@ -89,6 +90,7 @@ private fun Project.populateFromExtra(rootExt: SkyBuildExtension) {
     extraProp<Boolean>("skyBuild.enableDataBinding") { rootExt.enableDataBinding.set(it) }
     extraProp<Boolean>("skyBuild.enableBuildConfig") { rootExt.enableBuildConfig.set(it) }
     extraProp<Boolean>("skyBuild.enableCompose") { rootExt.enableCompose.set(it) }
+    extraProp<String>("skyBuild.composeBomVersion") { rootExt.composeBomVersion.set(it) }
 }
 
 /**
@@ -117,7 +119,7 @@ internal fun SkyBuildExtension.validateForLibrary(projectPath: String) {
             |  ${missing.joinToString("\n  ")}
             |
             |示例：
-            |  extra["skyBuild.compileSdk"] = 36
+            |  extra["skyBuild.compileSdk"] = 37
             |  extra["skyBuild.minSdk"] = 28
             |
             """.trimMargin()
@@ -150,7 +152,7 @@ internal fun SkyBuildExtension.validateForApplication(projectPath: String) {
             |  ${missing.joinToString("\n  ")}
             |
             |示例：
-            |  extra["skyBuild.compileSdk"] = 36
+            |  extra["skyBuild.compileSdk"] = 37
             |  extra["skyBuild.minSdk"] = 28
             |  extra["skyBuild.targetSdk"] = 35
             |  extra["skyBuild.applicationId"] = "com.example.app"
@@ -185,6 +187,7 @@ private fun logSkyBuildConfigOnce(project: Project, skyExt: SkyBuildExtension) {
         val enableDataBinding = if (skyExt.enableDataBinding.isPresent) skyExt.enableDataBinding.get() else "(not set)"
         val enableBuildConfig = if (skyExt.enableBuildConfig.isPresent) skyExt.enableBuildConfig.get() else "(not set)"
         val enableCompose = if (skyExt.enableCompose.isPresent) skyExt.enableCompose.get() else "(not set)"
+        val composeBomVersion = skyExt.composeBomVersion.orNull ?: "(default)"
 
         project.logger.lifecycle(
             """
@@ -201,6 +204,7 @@ private fun logSkyBuildConfigOnce(project: Project, skyExt: SkyBuildExtension) {
             |    enableDataBinding  = $enableDataBinding
             |    enableBuildConfig  = $enableBuildConfig
             |    enableCompose      = $enableCompose
+            |    composeBomVersion  = $composeBomVersion
             |
             """.trimMargin()
         )
