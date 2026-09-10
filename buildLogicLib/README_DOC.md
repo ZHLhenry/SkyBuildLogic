@@ -59,8 +59,8 @@
 
 | 项目 | 版本 |
 |------|------|
-| **buildLogicLib** | **1.2.1** |
-| 发布时间 | 2026-07-26 |
+| **buildLogicLib** | **1.2.4** |
+| 发布时间 | 2026-09-10 |
 | 发布仓库 | 阿里云效 Maven 私有仓库 |
 
 ### 2.2 最低兼容性要求
@@ -69,8 +69,8 @@
 
 | 依赖项 | 最低版本 | 说明 |
 |--------|---------|------|
-| **AGP (Android Gradle Plugin)** | **9.0+** | 本库基于 AGP 9.3.1 编译，使用了 AGP 9.x 的 Variant API |
-| **Kotlin** | **2.0+** | 本库使用 Kotlin 2.4.0 编译，KGP 需兼容 AGP 9.x |
+| **AGP (Android Gradle Plugin)** | **9.0+** | 本库基于 AGP 9.4.0 编译，使用了 AGP 9.x 的 Variant API |
+| **Kotlin** | **2.0+** | 本库使用 Kotlin 2.4.20 编译，KGP 需兼容 AGP 9.x |
 | **KSP** | **2.0+** | 需与 Kotlin 版本匹配，如 Kotlin 2.2.10 对应 KSP 2.3.9 |
 | **Java / JDK** | **17** | 本库编译目标为 JVM 17，消费项目必须使用 JDK 17 |
 | **Gradle** | **8.7+** | 需与 AGP 9.x 兼容的 Gradle 版本 |
@@ -85,12 +85,12 @@
 
 | 依赖 | 版本 | 说明 |
 |------|------|------|
-| AGP | 9.3.1 | Android Gradle Plugin |
-| Kotlin | 2.4.0 | Kotlin Gradle Plugin |
+| AGP | 9.4.0 | Android Gradle Plugin |
+| Kotlin | 2.4.20 | Kotlin Gradle Plugin |
 | KSP | 2.3.9 | Kotlin Symbol Processing |
 | Hilt | 2.60.1 | 依赖注入框架（内置默认版本，可覆盖） |
-| Compose Compiler | 随 Kotlin 2.4.0 | Compose Compiler Gradle Plugin |
-| Compose BOM | 2026.06.01 | Compose 物料清单。`enableCompose=true` 时由 `skyBuild.composeBomVersion`（默认 2026.06.01）控制，也可在根项目 `extra["skyBuild.composeBomVersion"]` 覆盖 |
+| Compose Compiler | 随 Kotlin 2.4.20 | Compose Compiler Gradle Plugin |
+| Compose BOM | 2026.09.00 | Compose 物料清单。`enableCompose=true` 时由 `skyBuild.composeBomVersion`（默认 2026.09.00）控制，也可在根项目 `extra["skyBuild.composeBomVersion"]` 覆盖 |
 
 ---
 
@@ -209,7 +209,7 @@ dependencyResolutionManagement {
 
 ```toml
 [versions]
-buildLogic = "1.2.1"
+buildLogic = "1.2.4"
 
 [libraries]
 hilt-noop-processor = { group = "com.sky.buildLogic", name = "hilt-noop-processor", version.ref = "buildLogic" }
@@ -481,7 +481,7 @@ android {
 | `composeBomVersion` | `Property<String>` | Compose BOM 版本（`enableCompose=true` 时生效） | ✅ | ❌ |
 
 **除 `composeBomVersion` 外，所有属性均无默认值**，消费者必须显式配置，否则构建时抛出异常并给出配置示例提示。
-`composeBomVersion` 未配置时使用插件内置默认值（当前 `2026.06.01`），可在根项目 `extra["skyBuild.composeBomVersion"]` 覆盖。
+`composeBomVersion` 未配置时使用插件内置默认值（当前 `2026.09.00`），可在根项目 `extra["skyBuild.composeBomVersion"]` 覆盖。
 
 ### 7.2 配置共享机制
 
@@ -637,7 +637,7 @@ mavenCentral.repoUrl=https://your-maven-repo.com/releases
 在 `local.properties` 中配置：
 
 ```properties
-buildLogic.version=1.2.1
+buildLogic.version=1.2.4
 buildLogic.repoUrl=https://packages.aliyun.com/6732fc8f356ccaf8531a1487/maven/skybuildlogic
 buildLogic.username=your_username
 buildLogic.password=your_password
@@ -647,7 +647,7 @@ buildLogic.password=your_password
 
 ```toml
 [versions]
-buildLogic = "1.2.1"
+buildLogic = "1.2.4"
 ```
 
 ### 9.2 发布命令
@@ -673,10 +673,10 @@ cd buildLogicLib
 convention 模块通过 `api` 声明以下依赖，消费项目无需重复引入：
 
 ```
-api(com.android.tools.build:gradle)                      // AGP 9.3.1
-api(org.jetbrains.kotlin:kotlin-gradle-plugin)            // Kotlin Gradle Plugin 2.4.0
+api(com.android.tools.build:gradle)                      // AGP 9.4.0
+api(org.jetbrains.kotlin:kotlin-gradle-plugin)            // Kotlin Gradle Plugin 2.4.20
 api(com.google.devtools.ksp:gradle-plugin)                // KSP Gradle Plugin 2.3.9
-api(org.jetbrains.kotlin:compose-compiler-gradle-plugin)  // Compose Compiler Plugin 2.4.0
+api(org.jetbrains.kotlin:compose-compiler-gradle-plugin)  // Compose Compiler Plugin 2.4.20
 api(com.google.dagger:hilt-android-gradle-plugin)         // Hilt Gradle Plugin 2.60.1
 ```
 

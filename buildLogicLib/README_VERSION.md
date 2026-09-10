@@ -1,3 +1,17 @@
+## [v1.2.4] - 2026-09-10
+- 依赖版本升级：
+  - AGP: 9.3.1 → 9.4.0
+  - Gradle: 9.6.1 → 9.7.1
+  - Kotlin: 2.4.0 → 2.4.20
+  - coreKtx: 1.18.0 → 1.19.0
+  - junitVersion: 1.2.1 → 1.3.0
+  - espressoCore: 3.6.1 → 3.7.0
+  - composeBom: 2026.06.01 → 2026.09.00
+  - buildLogic: 1.2.3 → 1.2.4
+- 内置默认值修正与升级：
+  - Hilt 内置默认版本由 2.60 修正为 2.60.1（与 `libs.versions.toml` 保持一致）
+  - Compose BOM 内置默认版本（`DEFAULT_COMPOSE_BOM_VERSION`）由 2026.06.01 升级为 2026.09.00
+
 ## [v1.2.3] - 2026-08-04
 - 新增 Compose 依赖自动内聚能力：
   - 新增 `ComposeDependencies.kt`，`enableCompose=true` 时自动注入 Compose BOM + Runtime + UI 套件，无需各模块手写依赖

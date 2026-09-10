@@ -8,7 +8,7 @@ class AndroidHiltConventionPlugin : Plugin<Project> {
 
     companion object {
         /** Hilt 默认版本，消费项目可在 libs.versions.toml 中覆盖 */
-        private const val HILT_VERSION = "2.60"
+        private const val HILT_VERSION = "2.60.1"
 
         /**
          * hilt-noop-processor 版本，与 convention 插件同步发布。

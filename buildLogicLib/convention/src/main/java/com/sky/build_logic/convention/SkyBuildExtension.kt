@@ -5,7 +5,7 @@ import org.gradle.api.provider.Property
 import javax.inject.Inject
 
 /** Compose BOM 内置默认版本 */
-internal const val DEFAULT_COMPOSE_BOM_VERSION = "2026.06.01"
+internal const val DEFAULT_COMPOSE_BOM_VERSION = "2026.09.00"
 
 /**
  * SkyBuild 配置扩展，使用者在根项目 build.gradle.kts 中通过 extra 属性进行配置。
