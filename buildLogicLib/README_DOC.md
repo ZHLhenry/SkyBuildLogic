@@ -59,8 +59,8 @@
 
 | 项目 | 版本 |
 |------|------|
-| **buildLogicLib** | **1.2.4** |
-| 发布时间 | 2026-09-10 |
+| **buildLogicLib** | **1.2.5** |
+| 发布时间 | 2026-09-17 |
 | 发布仓库 | 阿里云效 Maven 私有仓库 |
 
 ### 2.2 最低兼容性要求
@@ -109,7 +109,7 @@ buildLogicLib/
 │       ├── AndroidApplicationFlavorsConventionPlugin.kt # Flavor 配置插件
 │       ├── JvmLibraryConventionPlugin.kt                # JVM 库插件
 │       └── convention/
-│           ├── SkyBuildExtension.kt     # 配置扩展定义（11 个属性）
+│           ├── SkyBuildExtension.kt     # 配置扩展定义（13 个属性）
 │           ├── ProjectExtensions.kt     # 扩展注册/验证/日志/Provider 链工具
 │           ├── KotlinAndroid.kt         # Kotlin + Android 编译配置（两条路径）
 │           ├── SigningConfigs.kt        # 签名配置（从 local.properties 读取）
@@ -209,7 +209,7 @@ dependencyResolutionManagement {
 
 ```toml
 [versions]
-buildLogic = "1.2.4"
+buildLogic = "1.2.5"
 
 [libraries]
 hilt-noop-processor = { group = "com.sky.buildLogic", name = "hilt-noop-processor", version.ref = "buildLogic" }
@@ -296,6 +296,9 @@ extra["skyBuild.enableViewBinding"] = true
 extra["skyBuild.enableDataBinding"] = true
 extra["skyBuild.enableBuildConfig"] = true
 extra["skyBuild.enableCompose"] = true
+// 可选：R8 混淆开关（默认 false，不混淆）
+// extra["skyBuild.enableLibraryMinify"] = true   // Library release 混淆
+// extra["skyBuild.enableAppMinify"] = true        // App release 混淆 + 资源压缩
 ```
 
 > **说明：** 使用 convention 插件后，以下插件的 classpath 已由 convention 模块通过 `api` 依赖自动传递，
@@ -358,7 +361,8 @@ dependencies {
 - 若 `enableCompose = true`，自动应用 Compose Compiler 插件
 - 注册 APK 重命名任务和测试 APK 输出任务
 - ABI 过滤器：`arm64-v8a`、`armeabi-v7a`、`x86`、`x86_64`
-- `isMinifyEnabled` = `false`（debug 和 release 均为 false）
+- `isMinifyEnabled`：debug 恒为 `false`；release 由 `skyBuild.enableAppMinify` 控制（默认 `false`），开启时同步启用资源压缩 `isShrinkResources`
+- release `proguardFiles` 汇总自模块 `src/main/keepRules/*.keep`（不再硬编码 `proguard-rules.pro`）
 
 ### 6.3 Android Library 模块（含 Parcelize + Lint）
 
@@ -382,6 +386,7 @@ dependencies {
 - 应用 `kotlin-parcelize` 插件
 - 若 `enableCompose = true`，自动应用 Compose Compiler 插件
 - Lint 配置：`checkDependencies=true`、禁用 `UnusedResources`/`TypographyQuotes`、`warningsAsErrors=true`、生成 HTML+XML 报告
+- release R8 混淆由 `skyBuild.enableLibraryMinify` 控制（默认关闭）；开启时汇总 `src/main/keepRules` + `src/main/minifyRules` 规则，`keepRules/` 为空则 fail-fast 报错
 - 自动添加 `testImplementation(kotlin("test"))` 和 `androidTestImplementation(kotlin("test"))`
 
 ### 6.4 通用 Library 模块（无 Parcelize，无 Lint）
@@ -479,9 +484,11 @@ android {
 | `enableBuildConfig` | `Property<Boolean>` | 启用 BuildConfig 生成 | ✅ | ❌ |
 | `enableCompose` | `Property<Boolean>` | 启用 Compose 支持（控制是否应用 Compose Compiler 插件） | ✅ | ❌ |
 | `composeBomVersion` | `Property<String>` | Compose BOM 版本（`enableCompose=true` 时生效） | ✅ | ❌ |
+| `enableLibraryMinify` | `Property<Boolean>` | Library release 启用 R8 混淆（可选，默认 `false`） | ❌ | 可选 |
+| `enableAppMinify` | `Property<Boolean>` | App release 启用 R8 混淆并同步资源压缩（可选，默认 `false`） | 可选 | ❌ |
 
-**除 `composeBomVersion` 外，所有属性均无默认值**，消费者必须显式配置，否则构建时抛出异常并给出配置示例提示。
-`composeBomVersion` 未配置时使用插件内置默认值（当前 `2026.09.00`），可在根项目 `extra["skyBuild.composeBomVersion"]` 覆盖。
+**除 `composeBomVersion`、`enableLibraryMinify`、`enableAppMinify` 外，所有属性均无默认值**，消费者必须显式配置，否则构建时抛出异常并给出配置示例提示。
+`composeBomVersion` 未配置时使用插件内置默认值（当前 `2026.09.00`），可在根项目 `extra["skyBuild.composeBomVersion"]` 覆盖；`enableLibraryMinify` 与 `enableAppMinify` 未配置时默认 `false`（不混淆）。
 
 ### 7.2 配置共享机制
 
@@ -512,6 +519,7 @@ rootProject.extra["skyBuild.*"]
 |------|---------|---------|------|
 | `configureKotlinAndroid()` | Application、CommonLibrary | `CommonExtension` | 完整配置：compileSdk/minSdk、Java 17、packaging 排除规则、Kotlin JVM 17 + opt-in |
 | `configureAndroidLibrary()` | Library | `LibraryExtension` | 基础配置 + **Lint 配置**：checkDependencies=true、禁用 UnusedResources/TypographyQuotes、warningsAsErrors=true、HTML+XML 报告 |
+| `configureLibraryMinify()` | Library、CommonLibrary | `LibraryExtension` | release R8 混淆内聚：由 `enableLibraryMinify` 控制开关，汇总 `src/main/keepRules` + `src/main/minifyRules` 规则并注册 `consumer-rules.keep`；开启但 keepRules 为空时 fail-fast |
 
 **Kotlin 编译统一配置：**
 - Java/Kotlin 兼容性：Java 17
@@ -542,7 +550,8 @@ app.release.keyAlias=release_alias
 - Debug 构建类型使用 `app.debug.*` 签名配置
 - Release 构建类型使用 `app.release.*` 签名配置
 - `keyPassword` 与各自的 `storePassword` 相同
-- 两个构建类型的 `isMinifyEnabled` 均为 `false`
+- `isMinifyEnabled`：debug 恒为 `false`；release 由 `skyBuild.enableAppMinify` 控制（默认 `false`），开启时同步启用 `isShrinkResources`
+- release `proguardFiles` 汇总自模块 `src/main/keepRules/*.keep`（不再硬编码 `proguard-rules.pro`）
 - 均配置 ABI 过滤器：`arm64-v8a`、`armeabi-v7a`、`x86`、`x86_64`
 - `applicationIdSuffix`：DEBUG 和 RELEASE 均无后缀（枚举值 `null`）
 
@@ -624,6 +633,8 @@ mavenCentral.repoUrl=https://your-maven-repo.com/releases
     enableDataBinding  = true
     enableBuildConfig  = true
     enableCompose      = true
+    enableLibraryMinify = false
+    enableAppMinify    = false
 ```
 
 未配置的属性显示为 `(not set)`。日志在 `afterEvaluate` 阶段输出。
@@ -637,7 +648,7 @@ mavenCentral.repoUrl=https://your-maven-repo.com/releases
 在 `local.properties` 中配置：
 
 ```properties
-buildLogic.version=1.2.4
+buildLogic.version=1.2.5
 buildLogic.repoUrl=https://packages.aliyun.com/6732fc8f356ccaf8531a1487/maven/skybuildlogic
 buildLogic.username=your_username
 buildLogic.password=your_password
@@ -647,7 +658,7 @@ buildLogic.password=your_password
 
 ```toml
 [versions]
-buildLogic = "1.2.4"
+buildLogic = "1.2.5"
 ```
 
 ### 9.2 发布命令
@@ -696,3 +707,4 @@ api(com.google.dagger:hilt-android-gradle-plugin)         // Hilt Gradle Plugin 
 10. **消费项目 JDK 版本必须为 17**：本库编译目标为 JVM 17，消费项目需确保 Gradle 使用 JDK 17 运行
 11. **AGP 9.x 兼容性**：本库基于 AGP 9.x 构建，不兼容 AGP 8.x 及以下版本
 12. **Gradle 配置缓存兼容**：所有 Task 输入输出均使用正确的 Gradle 注解（`@Input`、`@OutputDirectory`、`@PathSensitive` 等），支持 Gradle Configuration Cache
+13. **R8 混淆为可选能力**：由 `enableLibraryMinify`（Library）与 `enableAppMinify`（App）控制，默认关闭；开启 Library 混淆时必须在 `src/main/keepRules/` 提供 `.keep` 规则文件，否则构建 fail-fast 报错。`src/main/minifyRules/` 用于仅库自身生效的规则，模块根 `consumer-rules.keep` 存在时随 AAR 分发给消费者

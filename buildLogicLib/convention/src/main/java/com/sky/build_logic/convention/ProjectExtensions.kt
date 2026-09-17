@@ -63,6 +63,8 @@ private fun linkToRoot(localExt: SkyBuildExtension, rootExt: SkyBuildExtension) 
     localExt.enableBuildConfig.set(rootExt.enableBuildConfig)
     localExt.enableCompose.set(rootExt.enableCompose)
     localExt.composeBomVersion.set(rootExt.composeBomVersion)
+    localExt.enableLibraryMinify.set(rootExt.enableLibraryMinify)
+    localExt.enableAppMinify.set(rootExt.enableAppMinify)
     localExt.applicationId.set(rootExt.applicationId)
 }
 
@@ -91,6 +93,8 @@ private fun Project.populateFromExtra(rootExt: SkyBuildExtension) {
     extraProp<Boolean>("skyBuild.enableBuildConfig") { rootExt.enableBuildConfig.set(it) }
     extraProp<Boolean>("skyBuild.enableCompose") { rootExt.enableCompose.set(it) }
     extraProp<String>("skyBuild.composeBomVersion") { rootExt.composeBomVersion.set(it) }
+    extraProp<Boolean>("skyBuild.enableLibraryMinify") { rootExt.enableLibraryMinify.set(it) }
+    extraProp<Boolean>("skyBuild.enableAppMinify") { rootExt.enableAppMinify.set(it) }
 }
 
 /**
@@ -188,6 +192,8 @@ private fun logSkyBuildConfigOnce(project: Project, skyExt: SkyBuildExtension) {
         val enableBuildConfig = if (skyExt.enableBuildConfig.isPresent) skyExt.enableBuildConfig.get() else "(not set)"
         val enableCompose = if (skyExt.enableCompose.isPresent) skyExt.enableCompose.get() else "(not set)"
         val composeBomVersion = skyExt.composeBomVersion.orNull ?: "(default)"
+        val enableLibraryMinify = if (skyExt.enableLibraryMinify.isPresent) skyExt.enableLibraryMinify.get() else "(not set)"
+        val enableAppMinify = if (skyExt.enableAppMinify.isPresent) skyExt.enableAppMinify.get() else "(not set)"
 
         project.logger.lifecycle(
             """
@@ -205,6 +211,8 @@ private fun logSkyBuildConfigOnce(project: Project, skyExt: SkyBuildExtension) {
             |    enableBuildConfig  = $enableBuildConfig
             |    enableCompose      = $enableCompose
             |    composeBomVersion  = $composeBomVersion
+            |    enableLibraryMinify = $enableLibraryMinify
+            |    enableAppMinify    = $enableAppMinify
             |
             """.trimMargin()
         )

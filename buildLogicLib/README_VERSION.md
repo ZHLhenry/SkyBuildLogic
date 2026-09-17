@@ -1,3 +1,16 @@
+## [v1.2.5] - 2026-09-17
+- 新增 R8 混淆内聚能力（Library + App），由两个可选开关控制，默认均关闭：
+  - `skyBuild.enableLibraryMinify`：Library 模块 release 启用 R8 混淆（默认 false）
+  - `skyBuild.enableAppMinify`：App 模块 release 启用 R8 混淆，并同步开启资源压缩 `isShrinkResources`（默认 false）
+- 混淆规则目录约定（`.keep` 后缀）：
+  - `src/main/keepRules`：公开 API keep 清单（单一事实源）。约定插件显式汇总传给库自身 R8（否则公开 API 会被按无引用裁剪），同时随 AAR 分发给消费者
+  - `src/main/minifyRules`：仅库自身混淆 pass 生效的元数据规则（keepattributes 等），放在 keepRules 之外以避免泄漏进消费者 App 的 R8 配置
+  - 模块根目录 `consumer-rules.keep`：旧约定兼容，存在时注册为消费者规则随 AAR 分发
+- fail-fast 保护：开启 `enableLibraryMinify=true` 但 `src/main/keepRules/` 下无任何 `.keep` 文件时，构建直接抛异常阻断，避免 classes.jar 被裁剪为空的延迟问题
+- App 签名配置调整（`SigningConfigs.kt`）：release `proguardFiles` 由硬编码 `proguard-rules.pro` 改为汇总 `src/main/keepRules/*.keep`；release `isMinifyEnabled` 由 `enableAppMinify` 控制，debug 始终不混淆、不压缩资源
+- Library 插件（`sky.android.library` / `sky.android.library.common`）新增 `configureLibraryMinify` 调用，内聚 release 混淆开关与规则通道
+- 构建日志新增 `enableLibraryMinify` / `enableAppMinify` 输出
+
 ## [v1.2.4] - 2026-09-10
 - 依赖版本升级：
   - AGP: 9.3.1 → 9.4.0

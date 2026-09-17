@@ -54,6 +54,48 @@ internal fun Project.configureAndroidLibrary(commonExtension: LibraryExtension) 
 }
 
 /**
+ * 配置 Library 模块的 release 构建类型：内聚 R8 混淆开关与规则通道。
+ *
+ * 规则目录约定（`.keep` 后缀）：
+ * - `src/main/keepRules`：公开 API keep 清单（单一事实源）。AGP 会自动把该目录打包进
+ *   AAR 的 proguard.txt 分发给消费者；但 AGP 不会把它传给 Library 自身 R8，故本函数
+ *   显式汇总进 proguardFiles（否则公开 API 被按无引用裁剪，classes.jar 为空）；
+ * - `src/main/minifyRules`：仅库自身混淆 pass 生效的规则（keepattributes 等元数据规则），
+ *   放在 keepRules 之外以避免泄漏进消费者 App 的 R8 配置；
+ * - 模块根目录 `consumer-rules.keep`：旧约定兼容，存在时注册为额外消费者规则。
+ */
+internal fun Project.configureLibraryMinify(commonExtension: LibraryExtension) {
+    val skyExt = ensureSkyBuildExtension()
+    val consumerRulesFile = file("consumer-rules.keep")
+    val keepRulesFiles = fileTree("src/main/keepRules").matching { include("**/*.keep") }.files
+    val minifyRulesFiles = fileTree("src/main/minifyRules").matching { include("**/*.keep") }.files
+    // fail-fast：开启混淆却无 keep 规则时，R8 会把公开 API 全部按无引用裁剪（classes.jar 为空），
+    // 且构建本身不报任何错误，问题会延迟到消费方编译/运行才暴露，故在此显式阻断
+    if (skyExt.enableLibraryMinify.get() && keepRulesFiles.isEmpty()) {
+        throw org.gradle.api.GradleException(
+            "[SkyBuild] ${project.path} 开启了 skyBuild.enableLibraryMinify=true，但 src/main/keepRules/ 下未找到任何 .keep 规则文件。" +
+                "请先补充 .keep 规则文件 清单。"
+        )
+    }
+    commonExtension.apply {
+        buildTypes {
+            release {
+                isMinifyEnabled = skyExt.enableLibraryMinify.get()
+                // keepRules（公开 API 单一事实源）+ minifyRules（pass 1 专属）显式传给库自身 R8
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    *keepRulesFiles.toTypedArray(),
+                    *minifyRulesFiles.toTypedArray()
+                )
+                if (consumerRulesFile.exists()) {
+                    consumerProguardFiles("consumer-rules.keep")
+                }
+            }
+        }
+    }
+}
+
+/**
  * Configure base Kotlin with Android options
  */
 internal fun Project.configureKotlinAndroid(

@@ -10,7 +10,7 @@ kotlin = "2.4.20"
 composeBom = "2026.09.00"
 ksp = "2.3.9"
 hilt = "2.60.1"
-buildLogic = "1.2.4"
+buildLogic = "1.2.5"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

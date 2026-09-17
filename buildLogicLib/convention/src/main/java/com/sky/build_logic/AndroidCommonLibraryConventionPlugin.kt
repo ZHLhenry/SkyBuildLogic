@@ -2,6 +2,7 @@ import com.android.build.api.dsl.LibraryExtension
 import com.sky.build_logic.convention.ComposeDependencySet
 import com.sky.build_logic.convention.configureComposeDependencies
 import com.sky.build_logic.convention.configureKotlinAndroid
+import com.sky.build_logic.convention.configureLibraryMinify
 import com.sky.build_logic.convention.ensureSkyBuildExtension
 import com.sky.build_logic.convention.registerSharedSkyBuildExtension
 import com.sky.build_logic.convention.validateForLibrary
@@ -31,6 +32,7 @@ class AndroidCommonLibraryConventionPlugin : Plugin<Project> {
                     compose = skyExt.enableCompose.get()
                 }
                 configureKotlinAndroid(this)
+                configureLibraryMinify(this)
             }
 
             if (skyExt.enableCompose.get()) {

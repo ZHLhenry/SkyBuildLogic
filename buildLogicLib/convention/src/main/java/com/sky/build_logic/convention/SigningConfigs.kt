@@ -8,6 +8,8 @@ internal fun Project.applySigningConfigs(
     applicationExtension: ApplicationExtension,
 ) {
     val skyExt = ensureSkyBuildExtension()
+    // App 模块 keep 规则统一放在 src/main/keepRules 目录（.keep 后缀），在此显式汇总
+    val keepRulesFiles = fileTree("src/main/keepRules").matching { include("**/*.keep") }.files
     val localProperties = Properties().apply {
         val localPropertiesFile = rootProject.file("local.properties")
         if (localPropertiesFile.exists()) {
@@ -57,7 +59,7 @@ internal fun Project.applySigningConfigs(
                 signingConfig = signingConfigs.getByName("debug")
                 proguardFiles(
                     getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
+                    *keepRulesFiles.toTypedArray()
                 )
                 ndk {
                     abiFilters.addAll(arrayOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64"))
@@ -65,11 +67,14 @@ internal fun Project.applySigningConfigs(
             }
             getByName("release") {
                 applicationIdSuffix = AppBuildType.RELEASE.applicationIdSuffix
-                isMinifyEnabled = false
+                // App 混淆开关由 skyBuild.enableAppMinify 内聚控制，debug 始终不混淆
+                isMinifyEnabled = skyExt.enableAppMinify.get()
+                // 资源压缩与混淆开关同步（R8 资源压缩前提为 isMinifyEnabled=true）
+                isShrinkResources = skyExt.enableAppMinify.get()
                 signingConfig = signingConfigs.getByName("release")
                 proguardFiles(
                     getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
+                    *keepRulesFiles.toTypedArray()
                 )
                 ndk {
                     abiFilters.addAll(arrayOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64"))
