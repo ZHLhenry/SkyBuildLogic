@@ -358,7 +358,7 @@ dependencies {
 - Release 签名配置从 `local.properties` 的 `app.release.*` 读取
 - `testInstrumentationRunner` = `androidx.test.runner.AndroidJUnitRunner`
 - `vectorDrawables.useSupportLibrary` = `true`
-- 若 `enableCompose = true`，自动应用 Compose Compiler 插件
+- 若 `enableCompose = true`，自动应用 Compose Compiler 插件，并关闭 `includeComposeMappingFile`（消除 R8 mapping tokenize 警告）
 - 注册 APK 重命名任务和测试 APK 输出任务
 - ABI 过滤器：`arm64-v8a`、`armeabi-v7a`、`x86`、`x86_64`
 - `isMinifyEnabled`：debug 恒为 `false`；release 由 `skyBuild.enableAppMinify` 控制（默认 `false`），开启时同步启用资源压缩 `isShrinkResources`
@@ -384,7 +384,7 @@ dependencies {
 **插件自动完成的配置：**
 - `compileSdk`、`minSdk` 从 skyBuild 共享配置读取
 - 应用 `kotlin-parcelize` 插件
-- 若 `enableCompose = true`，自动应用 Compose Compiler 插件
+- 若 `enableCompose = true`，自动应用 Compose Compiler 插件，并关闭 `includeComposeMappingFile`（消除 R8 mapping tokenize 警告）
 - Lint 配置：`checkDependencies=true`、禁用 `UnusedResources`/`TypographyQuotes`、`warningsAsErrors=true`、生成 HTML+XML 报告
 - release R8 混淆由 `skyBuild.enableLibraryMinify` 控制（默认关闭）；开启时汇总 `src/main/keepRules` + `src/main/minifyRules` 规则，`keepRules/` 为空则 fail-fast 报错
 - 自动添加 `testImplementation(kotlin("test"))` 和 `androidTestImplementation(kotlin("test"))`

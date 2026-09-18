@@ -1,5 +1,6 @@
 import com.android.build.api.dsl.LibraryExtension
 import com.sky.build_logic.convention.ComposeDependencySet
+import com.sky.build_logic.convention.configureComposeCompiler
 import com.sky.build_logic.convention.configureComposeDependencies
 import com.sky.build_logic.convention.configureKotlinAndroid
 import com.sky.build_logic.convention.configureLibraryMinify
@@ -36,6 +37,7 @@ class AndroidCommonLibraryConventionPlugin : Plugin<Project> {
             }
 
             if (skyExt.enableCompose.get()) {
+                configureComposeCompiler()
                 configureComposeDependencies(
                     dependencySet = ComposeDependencySet.RUNTIME_ONLY,
                     coreScope = "implementation",

@@ -1,6 +1,7 @@
 import com.android.build.api.dsl.LibraryExtension
 import com.sky.build_logic.convention.ComposeDependencySet
 import com.sky.build_logic.convention.configureAndroidLibrary
+import com.sky.build_logic.convention.configureComposeCompiler
 import com.sky.build_logic.convention.configureComposeDependencies
 import com.sky.build_logic.convention.configureLibraryMinify
 import com.sky.build_logic.convention.ensureSkyBuildExtension
@@ -31,6 +32,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 configureLibraryMinify(commonExtension = this)
             }
             if (skyExt.enableCompose.get()) {
+                configureComposeCompiler()
                 configureComposeDependencies(
                     dependencySet = ComposeDependencySet.CORE_UI,
                     coreScope = "api",

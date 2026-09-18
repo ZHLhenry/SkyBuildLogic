@@ -3,6 +3,7 @@ import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.sky.build_logic.convention.ComposeDependencySet
 import com.sky.build_logic.convention.ensureSkyBuildExtension
 import com.sky.build_logic.convention.applySigningConfigs
+import com.sky.build_logic.convention.configureComposeCompiler
 import com.sky.build_logic.convention.configureComposeDependencies
 import com.sky.build_logic.convention.configureKotlinAndroid
 import com.sky.build_logic.convention.configurePrintApksTask
@@ -49,6 +50,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             }
 
             if (skyExt.enableCompose.get()) {
+                configureComposeCompiler()
                 configureComposeDependencies(
                     dependencySet = ComposeDependencySet.CORE_UI,
                     coreScope = "implementation",

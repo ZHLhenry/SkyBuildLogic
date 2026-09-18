@@ -1,3 +1,8 @@
+## [v1.2.6] - 2026-09-18
+- 新增 Compose 编译器扩展内聚配置（`ComposeCompiler.kt` 的 `configureComposeCompiler()`）：
+  - `enableCompose=true` 时在 Application / Library / CommonLibrary 三个约定插件中自动调用
+  - 关闭 Compose 编译器的 `includeComposeMappingFile`，消除 release/R8 签名打包时大量 "Failed to collect Compose stack trace mapping (Failed to tokenize ...)" 警告（Google IssueTracker 555304803）；该 group key 映射仅在启用 GroupKeys 诊断堆栈模式（`Composer.setDiagnosticStackTraceMode`）时才有用途
+
 ## [v1.2.5] - 2026-09-17
 - 新增 R8 混淆内聚能力（Library + App），由两个可选开关控制，默认均关闭：
   - `skyBuild.enableLibraryMinify`：Library 模块 release 启用 R8 混淆（默认 false）
